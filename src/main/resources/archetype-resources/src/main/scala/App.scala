@@ -1,8 +1,6 @@
 package ${package}
 
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import org.apache.spark.SparkConf
+import org.apache.spark.sql.SparkSession
 
 /**
  * @author ${user.name}
@@ -10,19 +8,14 @@ import org.apache.spark.SparkConf
 object App {
 
   def main(args : Array[String]) {
-    val conf = new SparkConf()
-      .setAppName("The swankiest Spark app ever")
-      .setMaster("local[2]")
-
-    val sc = new SparkContext(conf)
-
-    val col = sc.parallelize(0 to 100 by 5)
-    val smp = col.sample(true, 4)
-    val colCount = col.count
-    val smpCount = smp.count
-    
-    println("orig count = " + colCount)
-    println("sampled count = " + smpCount)
+    val logFile = "README.md" // Should be some file on your system
+    val spark = SparkSession.builder.master("local").appName("Simple Application").getOrCreate()
+    val logData = spark.read.textFile(logFile).cache()
+    val numAs = logData.filter(line => line.contains("a")).count()
+    val numBs = logData.filter(line => line.contains("b")).count()
+    println(s"Lines with a: $numAs, Lines with b: $numBs")
+    spark.stop()
   }
 
-}
+} 
+
